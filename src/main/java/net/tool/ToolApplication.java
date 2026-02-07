@@ -99,16 +99,26 @@ public class ToolApplication implements CommandLineRunner {
                     System.out.println("  - GET" + " - OperationId: " +  pathItem.getGet().getOperationId());
                     endpoints.add(new ApiEndpoint(path, "GET", pathItem.getGet()));
                 }
-                if (pathItem.getPost() != null)
-                    System.out.println("  - POST" + " - OperationId: " +  pathItem.getPost().getOperationId());
-                if (pathItem.getPut() != null)
-                    System.out.println("  - PUT" + " - OperationId: " +  pathItem.getPut().getOperationId());
-                if (pathItem.getDelete() != null)
-                    System.out.println("  - DELETE" + " - OperationId: " +  pathItem.getDelete().getOperationId());
-                if (pathItem.getPatch() != null)
-                    System.out.println("  - PATCH" + " - OperationId: " +  pathItem.getPatch().getOperationId());
-
-
+                if (pathItem.getPost() != null) {
+                    System.out.println("  - POST" + " - OperationId: " + pathItem.getPost().getOperationId());
+                    endpoints.add(new ApiEndpoint(path, "POST", pathItem.getPost()));
+                }
+                if (pathItem.getPut() != null) {
+                    System.out.println("  - PUT" + " - OperationId: " + pathItem.getPut().getOperationId());
+                    endpoints.add(new ApiEndpoint(path, "PUT", pathItem.getPut()));
+                }
+                if (pathItem.getDelete() != null) {
+                    System.out.println("  - DELETE" + " - OperationId: " + pathItem.getDelete().getOperationId());
+                    endpoints.add(new ApiEndpoint(path, "DELETE", pathItem.getDelete()));
+                }
+                if (pathItem.getPatch() != null) {
+                    System.out.println("  - PATCH" + " - OperationId: " + pathItem.getPatch().getOperationId());
+                    endpoints.add(new ApiEndpoint(path, "PATCH", pathItem.getPatch()));
+                }
+                if (pathItem.getTrace() != null) {
+                    System.out.println("  - TRACE" + " - OperationId: " + pathItem.getTrace().getOperationId());
+                    endpoints.add(new ApiEndpoint(path, "TRACE", pathItem.getTrace()));
+                }
 
                 //System.out.println("Param " + pathItem.getParameters().getFirst());
 
@@ -122,15 +132,29 @@ public class ToolApplication implements CommandLineRunner {
             e.printStackTrace();
         }
 
-//        if (openAPI != null)
-//            try
-//            {
-//                for (Map :openAPI.getPaths())
-//
-//
-//            }catch (Exception e){
-//                System.out.println("FAILED TO CHECK THE OPERATION");
-//            }
+        if (openAPI != null)
+            try
+            {
+                int size = endpoints.size();
+                System.out.println("Test endpoints : " + size);
+
+                for (ApiEndpoint endpoint: endpoints){
+                    System.out.println("Endpoint: " + endpoint.getPath() + " => " + endpoint.getMethod());
+                    //System.out.println("Parameters: " + endpoint.getOperation().getParameters());
+                    if(endpoint.getOperation().getParameters() == null){
+                        endpoint.setHasAuth(false);
+                    }else{
+                        endpoint.setHasAuth(true);
+                    }
+
+                    System.out.println("Auth: " + endpoint.hasAuth);
+                    //openAPI.getPaths().get(endpoint.getPath()).get
+
+                }
+
+            }catch (Exception e){
+                System.out.println("FAILED TO CHECK THE OPERATION");
+            }
 
     }
 
@@ -224,6 +248,7 @@ public class ToolApplication implements CommandLineRunner {
         private final String path;
         private final String method;
         private final Operation operation;
+        private boolean hasAuth = false;
 
         public ApiEndpoint(String path, String method, Operation operation) {
             this.path = path;
@@ -234,6 +259,14 @@ public class ToolApplication implements CommandLineRunner {
         public String getPath() { return path; }
         public String getMethod() { return method; }
         public Operation getOperation() { return operation; }
+
+        public boolean isHasAuth() {
+            return hasAuth;
+        }
+
+        public void setHasAuth(boolean hasAuth) {
+            this.hasAuth = hasAuth;
+        }
     }
 
 }
