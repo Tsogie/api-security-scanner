@@ -41,12 +41,26 @@ public class UrlValidator {
 
     private HttpURLConnection openSafeConnection(URL url, InetAddress resolvedAddress, String method) throws Exception {
 
-        URL safeUrl = new URL(
-                url.getProtocol(),
-                resolvedAddress.getHostAddress(),
-                url.getPort() == -1 ? url.getDefaultPort() : url.getPort(),
-                url.getFile()
-        );
+        URL safeUrl;
+
+        if ("https".equals(url.getProtocol())) {
+            // bug fix: server name indication expects host name not ip
+            // HTTPS requires hostname for SNI — use original URL for connection
+            // re-verify DNS hasn't changed (narrow DNS rebinding window)
+            InetAddress currentResolution = InetAddress.getByName(url.getHost());
+            if (!currentResolution.equals(resolvedAddress)) {
+                throw new SecurityException("DNS resolution changed between checks");
+            }
+            safeUrl = url;
+        } else {
+            // HTTP — connect directly to IP (full DNS rebinding protection)
+            safeUrl = new URL(
+                    url.getProtocol(),
+                    resolvedAddress.getHostAddress(),
+                    url.getPort() == -1 ? url.getDefaultPort() : url.getPort(),
+                    url.getFile()
+            );
+        }
 
         HttpURLConnection connection = (HttpURLConnection)safeUrl.openConnection();
         connection.setRequestMethod(method);

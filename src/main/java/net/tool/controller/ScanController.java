@@ -1,23 +1,17 @@
 package net.tool.controller;
 
-import io.swagger.v3.oas.models.OpenAPI;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import net.tool.component.OpenApiParser;
-import net.tool.service.ReportBuilder;
 import net.tool.dto.RequestDto;
 import net.tool.dto.ResponseDto;
 import net.tool.component.UrlValidator;
-import net.tool.model.ApiEndpoint;
 import net.tool.model.Report;
-import net.tool.service.SecurityAnalyzer;
+import net.tool.service.ScanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/scan")
@@ -25,21 +19,16 @@ import java.util.List;
 public class ScanController {
 
     private final UrlValidator urlValidator;
-    private final OpenApiParser openApiParser;
-    private final SecurityAnalyzer securityAnalyzer;
-    private final ReportBuilder reportBuilder;
+    private final ScanService scanService;
 
     public ScanController(UrlValidator urlValidator,
-                          OpenApiParser openApiParser,
-                          SecurityAnalyzer securityAnalyzer,
-                          ReportBuilder reportBuilder) {
+                          ScanService scanService) {
         this.urlValidator = urlValidator;
-        this.openApiParser = openApiParser;
-        this.securityAnalyzer = securityAnalyzer;
-        this.reportBuilder = reportBuilder;
+        this.scanService = scanService;
     }
+
     @PostMapping("/validate")
-    public ResponseEntity<ResponseDto> validate(@RequestBody @Valid RequestDto request) {
+    public ResponseEntity<ResponseDto> validate(@RequestBody @Valid RequestDto request) throws Exception {
 
         // get urls from request
         String specUrl = request.getSpecUrl();
@@ -54,32 +43,8 @@ public class ScanController {
             return ResponseEntity.badRequest()
                     .body(ResponseDto.error("Target server is not reachable: " + targetUrl));
         }
-
-        OpenAPI openAPI;
-        try {
-            openAPI = openApiParser.parseOpenAPI(specUrl);
-            // got openAPI model from result(SwaggerParseResult)
-            if (openAPI == null) {
-                return ResponseEntity.badRequest()
-                        .body(ResponseDto.error("Unable to parse OpenAPI spec"));
-            }
-            log.info("\n✓ Ready for security scanning!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ResponseDto.error("Failed to parse OpenAPI spec: " + e.getMessage()));
-        }
-
-        // check malformed spec
-
-        String title = openAPI.getInfo().getTitle();
-        String version = openAPI.getInfo().getVersion();
-
-        // check auth
-        List<ApiEndpoint> endpoints = securityAnalyzer.analyze(openAPI);
-
-        // do report
-        Report report = reportBuilder.buildReport(endpoints, title, version);
-
+        // do scanning
+        Report report = scanService.scan(specUrl, targetUrl);
         return ResponseEntity.ok().body(ResponseDto.success(report));
     }
 }
