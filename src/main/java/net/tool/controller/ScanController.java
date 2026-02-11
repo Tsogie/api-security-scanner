@@ -1,6 +1,8 @@
 package net.tool.controller;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import net.tool.component.OpenApiParser;
 import net.tool.service.ReportBuilder;
 import net.tool.dto.RequestDto;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/scan")
+@Slf4j
 public class ScanController {
 
     private final UrlValidator urlValidator;
@@ -36,10 +39,10 @@ public class ScanController {
         this.reportBuilder = reportBuilder;
     }
     @PostMapping("/validate")
-    public ResponseEntity<ResponseDto> validate(@RequestBody RequestDto request) {
+    public ResponseEntity<ResponseDto> validate(@RequestBody @Valid RequestDto request) {
 
         // get urls from request
-        String specUrl = request.getBaseUrl();
+        String specUrl = request.getSpecUrl();
         String targetUrl = request.getTargetUrl();
 
         // validate url reachability
@@ -60,11 +63,13 @@ public class ScanController {
                 return ResponseEntity.badRequest()
                         .body(ResponseDto.error("Unable to parse OpenAPI spec"));
             }
-            System.out.println("\n✓ Ready for security scanning!");
+            log.info("\n✓ Ready for security scanning!");
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ResponseDto.error("Failed to parse OpenAPI spec: " + e.getMessage()));
         }
+
+        // check malformed spec
 
         String title = openAPI.getInfo().getTitle();
         String version = openAPI.getInfo().getVersion();

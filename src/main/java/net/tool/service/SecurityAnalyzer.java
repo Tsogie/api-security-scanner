@@ -2,6 +2,7 @@ package net.tool.service;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import lombok.extern.slf4j.Slf4j;
 import net.tool.model.ApiEndpoint;
 import org.springframework.stereotype.Service;
 
@@ -9,53 +10,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class SecurityAnalyzer {
 
+    // add null safety
     public List<ApiEndpoint> analyze(OpenAPI openAPI) {
 
         List<ApiEndpoint> endpoints = new ArrayList<>();
 
-        boolean hasGlobalSecurity;
-        if (openAPI.getSecurity() != null){
-            hasGlobalSecurity = true;
-        } else {
-            hasGlobalSecurity = false;
-        }
-        System.out.println("Global security: " + hasGlobalSecurity);
+        boolean hasGlobalSecurity = openAPI.getSecurity() != null;
+
+        log.info("Global security: {}", hasGlobalSecurity);
 
         openAPI.getPaths().forEach((path, pathItem) -> {
-            System.out.println("Path: " + path);
+            log.info("Path: {}", path);
 
             if (pathItem.getGet() != null) {
-                System.out.println("  - GET" + " - OperationId: " +  pathItem.getGet().getOperationId());
+                log.info("- GET: {}", pathItem.getGet().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "GET", pathItem.getGet()));
             }
             if (pathItem.getPost() != null) {
-                System.out.println("  - POST" + " - OperationId: " + pathItem.getPost().getOperationId());
+                log.info("- POST: {}", pathItem.getPost().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "POST", pathItem.getPost()));
             }
             if (pathItem.getPut() != null) {
-                System.out.println("  - PUT" + " - OperationId: " + pathItem.getPut().getOperationId());
+                log.info("- PUT: {}", pathItem.getPut().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "PUT", pathItem.getPut()));
             }
             if (pathItem.getDelete() != null) {
-                System.out.println("  - DELETE" + " - OperationId: " + pathItem.getDelete().getOperationId());
+                log.info("- DELETE: {}", pathItem.getDelete().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "DELETE", pathItem.getDelete()));
             }
             if (pathItem.getPatch() != null) {
-                System.out.println("  - PATCH" + " - OperationId: " + pathItem.getPatch().getOperationId());
+                log.info("- PATCH: {}", pathItem.getPatch().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "PATCH", pathItem.getPatch()));
             }
             if (pathItem.getTrace() != null) {
-                System.out.println("  - TRACE" + " - OperationId: " + pathItem.getTrace().getOperationId());
+                log.info("- TRACE: {}", pathItem.getTrace().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "TRACE", pathItem.getTrace()));
             }
         });
 
         for (ApiEndpoint endpoint: endpoints){
-            //System.out.println("Endpoint: " + endpoint.getPath() + " => " + endpoint.getMethod());
-            //System.out.println("Parameters: " + endpoint.getOperation().getParameters());
-            //System.out.println("Operation() " + endpoint.getOperation());
+            //log.info("Endpoint: {}  =>  {}", endpoint.getPath(), endpoint.getMethod());
+            //log.info("Parameters: {}", endpoint.getOperation().getParameters());
+            //log.info("Operation(): {}", endpoint.getOperation());
 
             boolean result = hasAuthentication(endpoint, hasGlobalSecurity);
             endpoint.setHasAuth(result);

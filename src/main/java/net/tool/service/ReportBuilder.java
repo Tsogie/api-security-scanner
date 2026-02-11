@@ -1,5 +1,6 @@
 package net.tool.service;
 
+import lombok.extern.slf4j.Slf4j;
 import net.tool.component.EndpointMapper;
 import net.tool.model.ApiEndpoint;
 import net.tool.dto.ApiEndpointDto;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class ReportBuilder {
 
     private final EndpointMapper endpointMapper;
@@ -30,13 +32,13 @@ public class ReportBuilder {
                 .count();
         int endpointCount = endpoints.size();
         int unprotectedEndpointCount = endpointCount - totalProtected;
-        System.out.println("\n=== Summary ===");
-        System.out.println("Total endpoints: " + endpointCount);
-        System.out.println("Total protected endpoints: " + totalProtected);
-        System.out.println("Total unprotected endpoints: " + (endpoints.size() - totalProtected));
-        System.out.println("Total risk score: " + totalScore);
+        log.info("\n=== Summary ===");
+        log.info("Total endpoints: {}", endpointCount);
+        log.info("Total protected endpoints: {}", totalProtected);
+        log.info("Total unprotected endpoints: {}", unprotectedEndpointCount);
+        log.info("Total risk score: {}", totalScore);
         String overallRiskLevel = getOverallRiskLevel(totalScore, endpointCount);
-        System.out.println("Final assessment: " + overallRiskLevel);
+        log.info("Final assessment: {}", overallRiskLevel);
 
         return new Report(title,
                 version,
@@ -48,6 +50,10 @@ public class ReportBuilder {
                 endpointDtos);
     }
     private String getOverallRiskLevel(int totalScore, int endpointCount) {
+
+        if(endpointCount == 0){
+            throw new IllegalArgumentException("Endpoint count must be greater than zero");
+        }
         double average = (double) totalScore / endpointCount;
 
         if (average >= 4.0) return "CRITICAL - Immediate action required";

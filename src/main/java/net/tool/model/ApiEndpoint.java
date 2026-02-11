@@ -4,30 +4,25 @@ import io.swagger.v3.oas.models.Operation;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 public class ApiEndpoint {
 
     private final String path;
     private final String method;
     private final Operation operation;
 
-    @Getter
-    @Setter
     private boolean hasAuth = false;
-
-    @Getter
     private String risk;
-
-    @Getter
     private int riskScore;
+
     public ApiEndpoint(String path, String method, Operation operation) {
         this.path = path;
         this.method = method;
         this.operation = operation;
 
     }
-
     //custom setter for risk
-
     public void setRisk (String risk){
         this.risk = risk;
         this.riskScore = calculateScore(risk);
@@ -45,7 +40,5 @@ public class ApiEndpoint {
         }
 
     }
-    public String getPath() { return path; }
-    public String getMethod() { return method; }
-    public Operation getOperation() { return operation; }
+
 }
