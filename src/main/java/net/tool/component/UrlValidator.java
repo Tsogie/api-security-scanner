@@ -1,5 +1,6 @@
 package net.tool.component;
 
+import net.tool.exception.InvalidUrlException;
 import org.springframework.stereotype.Component;
 
 import java.net.HttpURLConnection;
@@ -10,7 +11,7 @@ import java.net.UnknownHostException;
 @Component
 public class UrlValidator {
 
-    public boolean isSpecUrlValid(String urlString) {
+    public void validateSpecUrl(String urlString) {
         try {
             URL url = new URL(urlString);
             InetAddress resolvedAddress = resolve(url.getHost());
@@ -18,24 +19,32 @@ public class UrlValidator {
             int responseCode = connection.getResponseCode();
             connection.disconnect();
 
-            return responseCode >= 200 && responseCode < 300;
+            if (responseCode < 200 || responseCode >= 300) {
+                throw new InvalidUrlException("Spec URL returned HTTP " + responseCode);
+            }
 
+        } catch (InvalidUrlException e){
+            throw e;
         } catch (Exception e) {
-            return false;
+            throw new InvalidUrlException(
+                    "Failed to reach spec URL: " + e.getMessage()
+            );
         }
     }
 
-    public boolean isServerReachable(String urlString) {
+    public void validateServerUrl(String urlString) {
         try {
             URL url = new URL(urlString);
             InetAddress resolvedAddress = resolve(url.getHost());
             HttpURLConnection connection = openSafeConnection(url, resolvedAddress, "HEAD");
-            int responseCode = connection.getResponseCode();
+            connection.getResponseCode();
             connection.disconnect();
-
-            return responseCode > 0;
+        } catch (InvalidUrlException e){
+            throw e;
         } catch (Exception e) {
-            return false;
+            throw new InvalidUrlException(
+                    "Failed to reach target URL: " + e.getMessage()
+            );
         }
     }
 

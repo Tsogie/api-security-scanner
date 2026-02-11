@@ -4,12 +4,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import lombok.extern.slf4j.Slf4j;
 import net.tool.component.OpenApiParser;
 import net.tool.component.UrlValidator;
-import net.tool.dto.ResponseDto;
 import net.tool.exception.EmptySpecException;
 import net.tool.exception.SpecParsingException;
 import net.tool.model.ApiEndpoint;
 import net.tool.model.Report;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,13 +16,16 @@ import java.util.List;
 @Slf4j
 public class ScanService {
 
+    private final UrlValidator urlValidator;
     private final OpenApiParser openApiParser;
     private final SecurityAnalyzer securityAnalyzer;
     private final ReportBuilder reportBuilder;
 
-    public ScanService(OpenApiParser openApiParser,
+    public ScanService(UrlValidator urlValidator,
+                       OpenApiParser openApiParser,
                        SecurityAnalyzer securityAnalyzer,
                        ReportBuilder reportBuilder) {
+        this.urlValidator = urlValidator;
         this.openApiParser = openApiParser;
         this.securityAnalyzer = securityAnalyzer;
         this.reportBuilder = reportBuilder;
@@ -33,6 +34,10 @@ public class ScanService {
     public Report scan(String specUrl, String targetUrl) throws Exception {
 
         OpenAPI openAPI;
+
+        // validate url reachability (throws InvalidUrlException on failure)
+        urlValidator.validateSpecUrl(specUrl);
+        urlValidator.validateServerUrl(targetUrl);
 
         openAPI = openApiParser.parseOpenAPI(specUrl);
         // got openAPI model from result(SwaggerParseResult)

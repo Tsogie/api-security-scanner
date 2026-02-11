@@ -18,7 +18,9 @@ public class SecurityAnalyzer {
 
         List<ApiEndpoint> endpoints = new ArrayList<>();
 
-        boolean hasGlobalSecurity = openAPI.getSecurity() != null;
+        // empty or null
+        boolean hasGlobalSecurity = openAPI.getSecurity() != null
+                && !openAPI.getSecurity().isEmpty();
 
         log.info("Global security: {}", hasGlobalSecurity);
 
@@ -68,17 +70,22 @@ public class SecurityAnalyzer {
         return endpoints;
     }
 
-
     public boolean hasAuthentication(ApiEndpoint endpoint, boolean hasGlobalSecurity){
 
         // start with parameter if it has something
-        // can have header, query, path. only header is auth indication
+        // header, query
         if(endpoint.getOperation().getParameters() != null){
             List <Parameter> params = endpoint.getOperation().getParameters();
             for (Parameter param: params){
-                boolean isAuthHeader = "Authorization".equalsIgnoreCase(param.getName())
-                        && "header".equalsIgnoreCase(param.getIn());
-                if (isAuthHeader) {
+                String paramName = param.getName().toLowerCase();
+                String paramIn = param.getIn();
+
+                if("header".equalsIgnoreCase(paramIn) && AUTH_HEADER_NAMES.contains(paramName)){
+                    log.info("Auth detected: {} header", param.getName());
+                    return true;
+                }
+                if("query".equalsIgnoreCase(paramIn) && AUTH_PARAM_NAMES.contains(paramName)){
+                    log.info("Auth detected: {} query", param.getName());
                     return true;
                 }
             }
@@ -96,6 +103,27 @@ public class SecurityAnalyzer {
         // if security field null
         return hasGlobalSecurity;
     }
+
+    // Common auth header names
+    private static final List<String> AUTH_HEADER_NAMES = List.of(
+            "authorization",      // Standard OAuth/JWT
+            "x-api-key",         // Common API key header
+            "apikey",            // Alternative API key header
+            "api-key",           // Another variant
+            "x-auth-token",      // Custom token header
+            "x-access-token"    // Access token variant
+    );
+
+    // Common auth query parameter names
+    private static final List<String> AUTH_PARAM_NAMES = List.of(
+            "api_key",           // Google Maps, OpenWeatherMap
+            "apikey",            // Alternative spelling
+            "access_token",      // OAuth 2.0 query param
+            "token",             // Generic token
+            "key",               // Simple key param
+            "appid",             // OpenWeatherMap specific
+            "auth"               // Generic auth param
+    );
 
     private static final List<String> SENSITIVE_KEYWORDS =
             List.of("admin", "user", "account", "password", "wallet",

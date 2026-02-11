@@ -18,12 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class ScanController {
 
-    private final UrlValidator urlValidator;
     private final ScanService scanService;
 
-    public ScanController(UrlValidator urlValidator,
-                          ScanService scanService) {
-        this.urlValidator = urlValidator;
+    public ScanController(ScanService scanService) {
         this.scanService = scanService;
     }
 
@@ -34,15 +31,6 @@ public class ScanController {
         String specUrl = request.getSpecUrl();
         String targetUrl = request.getTargetUrl();
 
-        // validate url reachability
-        if(!urlValidator.isSpecUrlValid(specUrl)){
-            return ResponseEntity.badRequest()
-                    .body(ResponseDto.error("OpenAPI spec URL is not reachable: " + specUrl));
-        }
-        if(!urlValidator.isServerReachable(targetUrl)){
-            return ResponseEntity.badRequest()
-                    .body(ResponseDto.error("Target server is not reachable: " + targetUrl));
-        }
         // do scanning
         Report report = scanService.scan(specUrl, targetUrl);
         return ResponseEntity.ok().body(ResponseDto.success(report));
