@@ -58,6 +58,6 @@ public class ScanService {
         List<ApiEndpoint> endpoints = securityAnalyzer.analyze(openAPI);
 
         // do report
-        return reportBuilder.buildReport(endpoints, title, version);
+        return reportBuilder.buildReport(endpoints, title, version, openAPI);
     }
 }

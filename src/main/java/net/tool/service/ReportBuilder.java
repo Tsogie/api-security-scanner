@@ -1,5 +1,6 @@
 package net.tool.service;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import lombok.extern.slf4j.Slf4j;
 import net.tool.component.EndpointMapper;
 import net.tool.model.ApiEndpoint;
@@ -19,7 +20,7 @@ public class ReportBuilder {
         this.endpointMapper = endpointMapper;
     }
 
-    public Report buildReport(List<ApiEndpoint> endpoints, String title, String version) {
+    public Report buildReport(List<ApiEndpoint> endpoints, String title, String version, OpenAPI openAPI) {
 
         List <ApiEndpoint> orderedEndpoints = new ArrayList<>(endpoints);
         orderedEndpoints.sort((a, b) -> b.getRiskScore() - a.getRiskScore());
@@ -40,6 +41,8 @@ public class ReportBuilder {
         String overallRiskLevel = getOverallRiskLevel(totalScore, endpointCount);
         log.info("Final assessment: {}", overallRiskLevel);
 
+        List<String> warnings = getSpecWarnings(openAPI);
+
         return new Report(title,
                 version,
                 endpointCount,
@@ -47,6 +50,7 @@ public class ReportBuilder {
                 unprotectedEndpointCount,
                 totalScore,
                 overallRiskLevel,
+                warnings,
                 endpointDtos);
     }
     private String getOverallRiskLevel(int totalScore, int endpointCount) {
@@ -61,6 +65,31 @@ public class ReportBuilder {
         if (average >= 2.0) return "MEDIUM - Some improvements needed";
         if (average >= 1.5) return "LOW - Minor issues";
         return "GOOD - Well secured";
+    }
+
+    public List<String> getSpecWarnings(OpenAPI openAPI) {
+        List<String> warnings = new ArrayList<>();
+
+        // Check if schemes defined but not used
+        if (openAPI.getComponents() != null
+                && openAPI.getComponents().getSecuritySchemes() != null
+                && !openAPI.getComponents().getSecuritySchemes().isEmpty()) {
+
+            if (openAPI.getSecurity() == null || openAPI.getSecurity().isEmpty()) {
+                warnings.add("Security schemes defined but not applied globally");
+            }
+        }
+
+        // Check for HTTP servers
+        if (openAPI.getServers() != null) {
+            openAPI.getServers().forEach(server -> {
+                if (server.getUrl().startsWith("http://")) {
+                    warnings.add("Server uses HTTP instead of HTTPS: " + server.getUrl());
+                }
+            });
+        }
+
+        return warnings;
     }
 
 }

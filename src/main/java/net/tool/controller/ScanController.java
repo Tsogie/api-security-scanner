@@ -36,3 +36,9 @@ public class ScanController {
         return ResponseEntity.ok().body(ResponseDto.success(report));
     }
 }
+
+
+//{
+//        "specUrl": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
+//        "targetUrl": "https://api.stripe.com"
+//        }

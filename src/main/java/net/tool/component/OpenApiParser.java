@@ -44,7 +44,7 @@ public class OpenApiParser {
     private OpenAPI parseSpec(String specContent) {
         try {
             // Validate size
-            if (specContent.length() > 10_000_000) { // 10MB limit
+            if (specContent.length() > 20_000_000) { // 20MB limit
                 throw new RuntimeException("Spec too large");
             }
 

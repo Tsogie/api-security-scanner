@@ -21,6 +21,7 @@ public class Report {
     private int unprotectedCount;
     private int totalRiskScore;
     private String overallRiskLevel;
+    private List<String> warnings;
     private List<ApiEndpointDto> endpoints;
 
 
