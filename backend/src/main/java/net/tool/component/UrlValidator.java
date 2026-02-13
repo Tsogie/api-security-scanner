@@ -1,5 +1,6 @@
 package net.tool.component;
 
+import lombok.extern.slf4j.Slf4j;
 import net.tool.exception.InvalidUrlException;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +10,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 @Component
+@Slf4j
 public class UrlValidator {
 
     public void validateServerUrl(String urlString) {
@@ -16,14 +18,16 @@ public class UrlValidator {
             URL url = new URL(urlString);
             InetAddress resolvedAddress = resolve(url.getHost());
             HttpURLConnection connection = openSafeConnection(url, resolvedAddress, "HEAD");
-            connection.getResponseCode();
-            connection.disconnect();
+            try {
+                connection.getResponseCode();
+            } finally {
+                connection.disconnect();
+            }
         } catch (InvalidUrlException e){
             throw e;
         } catch (Exception e) {
-            throw new InvalidUrlException(
-                    "Failed to reach target URL: " + e.getMessage()
-            );
+            log.warn("Spec URL validation failed for {}: {}", urlString, e.getMessage());
+            throw new InvalidUrlException("Failed to reach spec URL");
         }
     }
 

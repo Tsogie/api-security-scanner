@@ -19,8 +19,6 @@ public class SecurityAnalyzer {
     // add null safety
     public List<ApiEndpoint> analyze(OpenAPI openAPI) {
 
-        List<ApiEndpoint> endpoints = new ArrayList<>();
-
         // Check if security schemes are defined in components
         boolean hasSecuritySchemes = openAPI.getComponents() != null
                 && openAPI.getComponents().getSecuritySchemes() != null
@@ -49,6 +47,28 @@ public class SecurityAnalyzer {
         // check global security against security scheme definition
         //boolean hasGlobalSecurity = hasValidGlobalSecurity(openAPI);
 
+        List <ApiEndpoint> endpoints = extractEndpoints(openAPI);
+
+        for (ApiEndpoint endpoint: endpoints){
+
+            log.info("Checking endpoint: {} {}", endpoint.getMethod(), endpoint.getPath());
+            log.info("Operation security: {}", endpoint.getOperation().getSecurity());
+
+            boolean result = hasAuthentication(endpoint, hasValidGlobalSecurity, definedSchemes);
+            endpoint.setHasAuth(result);
+            if (!result) {
+                String risk = assessRisk(endpoint);
+                endpoint.setRisk(risk);
+            } else {
+                endpoint.setRisk("OK");
+            }
+        }
+        return endpoints;
+    }
+
+    private List<ApiEndpoint> extractEndpoints (OpenAPI openAPI) {
+
+        List<ApiEndpoint> endpoints = new ArrayList<>();
         openAPI.getPaths().forEach((path, pathItem) -> {
             log.info("Path: {}", path);
 
@@ -76,30 +96,18 @@ public class SecurityAnalyzer {
                 //log.info("- TRACE: {}", pathItem.getTrace().getOperationId());
                 endpoints.add(new ApiEndpoint(path, "TRACE", pathItem.getTrace()));
             }
+            if (pathItem.getHead() != null) {
+                //log.info("- TRACE: {}", pathItem.getTrace().getOperationId());
+                endpoints.add(new ApiEndpoint(path, "HEAD", pathItem.getHead()));
+            }
+            if (pathItem.getOptions() != null) {
+                //log.info("- TRACE: {}", pathItem.getTrace().getOperationId());
+                endpoints.add(new ApiEndpoint(path, "OPTIONS", pathItem.getOptions()));
+            }
         });
 
-        for (ApiEndpoint endpoint: endpoints){
-            //log.info("Endpoint: {}  =>  {}", endpoint.getPath(), endpoint.getMethod());
-            //log.info("Parameters: {}", endpoint.getOperation().getParameters());
-            //log.info("Operation(): {}", endpoint.getOperation());
-
-            // Debug logging
-            log.info("Checking endpoint: {} {}", endpoint.getMethod(), endpoint.getPath());
-            //log.info("Global security: {}", hasGlobalSecurity);
-            log.info("Operation security: {}", endpoint.getOperation().getSecurity());
-
-            boolean result = hasAuthentication(endpoint, hasValidGlobalSecurity, definedSchemes);
-            endpoint.setHasAuth(result);
-            if (!result) {
-                String rick = assessRisk(endpoint);
-                endpoint.setRisk(rick);
-            } else {
-                endpoint.setRisk("OK");
-            }
-        }
         return endpoints;
     }
-
     private Set<String> getDefinedSchemes(OpenAPI openAPI) {
         if (openAPI.getComponents() != null
                 && openAPI.getComponents().getSecuritySchemes() != null) {
@@ -157,6 +165,7 @@ public class SecurityAnalyzer {
                 }
             }
         }
+        // auth param check is informational here, it will be on report
         log.info("Possible Auth In Param: {}", authInParam);
 
         // execute if not null, it can be empty [] or has something

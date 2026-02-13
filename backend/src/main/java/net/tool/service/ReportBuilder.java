@@ -68,6 +68,8 @@ public class ReportBuilder {
     }
 
     public List<String> getSpecWarnings(OpenAPI openAPI) {
+        // add param auth finding if any
+
         List<String> warnings = new ArrayList<>();
 
         // Check if schemes defined but not used

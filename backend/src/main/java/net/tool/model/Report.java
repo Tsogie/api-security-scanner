@@ -23,6 +23,4 @@ public class Report {
     private String overallRiskLevel;
     private List<String> warnings;
     private List<ApiEndpointDto> endpoints;
-
-
 }

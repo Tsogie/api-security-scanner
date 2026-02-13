@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import net.tool.dto.RequestDto;
 import net.tool.dto.ResponseDto;
-import net.tool.component.UrlValidator;
 import net.tool.model.Report;
 import net.tool.service.ScanService;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +35,3 @@ public class ScanController {
         return ResponseEntity.ok().body(ResponseDto.success(report));
     }
 }
-
-
-//{
-//        "specUrl": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
-//        "targetUrl": "https://api.stripe.com"
-//        }

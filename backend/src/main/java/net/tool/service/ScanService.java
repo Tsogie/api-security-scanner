@@ -35,24 +35,25 @@ public class ScanService {
 
         OpenAPI openAPI;
 
-        // validate url reachability (throws InvalidUrlException on failure)
-        // urlValidator.validateSpecUrl(specUrl);
+        // validate server reachability (throws InvalidUrlException on failure)
         urlValidator.validateServerUrl(targetUrl);
 
+        // validate spec url with parsing
         openAPI = openApiParser.parseOpenAPI(specUrl);
+
         // got openAPI model from result(SwaggerParseResult)
         if (openAPI == null) {
             throw new SpecParsingException("Unable to parse OpenAPI spec", specUrl);
         }
-        log.info("\n✓ Ready for security scanning!");
+        log.info("\n Ready for security scanning!");
 
         // check malformed spec
         if (openAPI.getPaths() == null || openAPI.getPaths().isEmpty()) {
             throw new EmptySpecException(specUrl);
         }
 
-        String title = openAPI.getInfo().getTitle();
-        String version = openAPI.getInfo().getVersion();
+        String title = openAPI.getInfo() != null ? openAPI.getInfo().getTitle() : "Unknown";
+        String version = openAPI.getInfo() != null ? openAPI.getInfo().getVersion() : "Unknown";
 
         // check auth
         List<ApiEndpoint> endpoints = securityAnalyzer.analyze(openAPI);
