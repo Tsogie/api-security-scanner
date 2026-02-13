@@ -4,16 +4,24 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import net.tool.exception.InvalidUrlException;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.stream.Collectors;
 
 @Component
 public class OpenApiParser {
+
+    private final UrlValidator urlValidator;
+
+    public OpenApiParser(UrlValidator urlValidator) {
+        this.urlValidator = urlValidator;
+    }
 
     public OpenAPI parseOpenAPI(String urlString) throws Exception {
         String specContent = fetchSpecContent(urlString);
@@ -23,18 +31,32 @@ public class OpenApiParser {
      * Helper, Fetch the OpenAPI spec content as a String
      */
     private String fetchSpecContent(String urlString) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setConnectTimeout(5000);
-        connection.setReadTimeout(5000);
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(connection.getInputStream()))) {
-            //System.out.println("Reader lines: " + reader.lines().collect(Collectors.joining("\n")));
-            return reader.lines().collect(Collectors.joining("\n"));
-        } finally {
-            connection.disconnect();
+        try {
+            URL url = new URL(urlString);
+            InetAddress resolvedAddress = urlValidator.resolve(url.getHost());
+            HttpURLConnection connection = urlValidator.openSafeConnection(url, resolvedAddress, "GET");
+
+            try {
+                int responseCode = connection.getResponseCode();
+                if (responseCode < 200 || responseCode >= 300) {
+                    throw new InvalidUrlException("Spec URL returned HTTP " + responseCode);
+                }
+
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()))) {
+                    return reader.lines().collect(Collectors.joining("\n"));
+                }
+
+            } finally {
+                connection.disconnect();
+            }
+        } catch (InvalidUrlException e){
+            throw e;
+        } catch (Exception e) {
+            throw new InvalidUrlException(
+                    "Failed to reach target URL: " + e.getMessage()
+            );
         }
     }
 

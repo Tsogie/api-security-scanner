@@ -11,27 +11,6 @@ import java.net.UnknownHostException;
 @Component
 public class UrlValidator {
 
-    public void validateSpecUrl(String urlString) {
-        try {
-            URL url = new URL(urlString);
-            InetAddress resolvedAddress = resolve(url.getHost());
-            HttpURLConnection connection = openSafeConnection(url, resolvedAddress, "GET");
-            int responseCode = connection.getResponseCode();
-            connection.disconnect();
-
-            if (responseCode < 200 || responseCode >= 300) {
-                throw new InvalidUrlException("Spec URL returned HTTP " + responseCode);
-            }
-
-        } catch (InvalidUrlException e){
-            throw e;
-        } catch (Exception e) {
-            throw new InvalidUrlException(
-                    "Failed to reach spec URL: " + e.getMessage()
-            );
-        }
-    }
-
     public void validateServerUrl(String urlString) {
         try {
             URL url = new URL(urlString);
@@ -48,7 +27,8 @@ public class UrlValidator {
         }
     }
 
-    private HttpURLConnection openSafeConnection(URL url, InetAddress resolvedAddress, String method) throws Exception {
+    // Package-private: exposed for OpenApiParser
+    HttpURLConnection openSafeConnection(URL url, InetAddress resolvedAddress, String method) throws Exception {
 
         URL safeUrl;
 
@@ -78,10 +58,11 @@ public class UrlValidator {
         // no redirects
         connection.setInstanceFollowRedirects(false);
         connection.setRequestProperty("Host", url.getHost());
-
         return connection;
     }
-    private InetAddress resolve(String host) throws UnknownHostException {
+
+    // Package-private: exposed for OpenApiParser
+    InetAddress resolve(String host) throws UnknownHostException {
         InetAddress address = InetAddress.getByName(host);
         if (isBlocklisted(address)){
             throw new SecurityException("Blocklisted address" + address);

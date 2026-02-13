@@ -36,7 +36,7 @@ public class ScanService {
         OpenAPI openAPI;
 
         // validate url reachability (throws InvalidUrlException on failure)
-        urlValidator.validateSpecUrl(specUrl);
+        // urlValidator.validateSpecUrl(specUrl);
         urlValidator.validateServerUrl(targetUrl);
 
         openAPI = openApiParser.parseOpenAPI(specUrl);
