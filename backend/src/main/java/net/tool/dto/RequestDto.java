@@ -12,19 +12,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RequestDto {
 
-    @NotBlank(message = "Target URL is required")
-    @URL(message = "Target URL should be valid URL")
-    @Pattern(
-            regexp = "^https?://.+\\..+",
-            message = "Target URL must contain http or https scheme")
-    private String targetUrl;
 
     @NotBlank(message = "Spec URL is required")
     @URL(message = "Spec URL should be valid URL")
-    @Pattern(
-            regexp = "^https?://.+\\..+",
-            message = "Spec URL must contain http or https scheme"
-    )
+//    @Pattern(
+//            regexp = "^http?://.+\\..+",
+//            message = "Spec URL must contain http or https scheme"
+//    )
     private String specUrl;
 
 }

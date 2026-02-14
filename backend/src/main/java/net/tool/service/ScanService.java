@@ -31,12 +31,12 @@ public class ScanService {
         this.reportBuilder = reportBuilder;
     }
 
-    public Report scan(String specUrl, String targetUrl) throws Exception {
+    public Report scan(String specUrl) throws Exception {
 
         OpenAPI openAPI;
 
         // validate server reachability (throws InvalidUrlException on failure)
-        urlValidator.validateServerUrl(targetUrl);
+        //urlValidator.validateServerUrl(targetUrl);
 
         // validate spec url with parsing
         openAPI = openApiParser.parseOpenAPI(specUrl);

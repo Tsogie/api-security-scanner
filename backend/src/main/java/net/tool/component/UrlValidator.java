@@ -75,13 +75,17 @@ public class UrlValidator {
     }
 
     private boolean isBlocklisted(InetAddress address) {
-        return address.isAnyLocalAddress() ||
-                address.isLoopbackAddress() ||
-                address.isLinkLocalAddress() ||
-                address.isMulticastAddress() ||
-                address.isSiteLocalAddress() ||
-                isCloudMetaDataIp(address);
+        return isCloudMetaDataIp(address);
     }
+
+//    private boolean isBlocklisted(InetAddress address) {
+//        return address.isAnyLocalAddress() ||
+//                address.isLoopbackAddress() ||
+//                address.isLinkLocalAddress() ||
+//                address.isMulticastAddress() ||
+//                address.isSiteLocalAddress() ||
+//                isCloudMetaDataIp(address);
+//    }
     private boolean isCloudMetaDataIp(InetAddress address) {
         String ip = address.getHostAddress();
         return ip.startsWith("169.254.") || ip.equals("100.100.100.200");
