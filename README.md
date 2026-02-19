@@ -1,30 +1,47 @@
+# OpenAPI Security Scanner
 
-TEST DATA
+Static security analysis tool that audits OpenAPI specifications for authentication gaps and risk assessment.
 
-{
-"specUrl": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
-"targetUrl": "https://api.stripe.com"
-}
+## What It Does
 
-{
-"specUrl": "https://petstore3.swagger.io/api/v3/openapi.json",
-"targetUrl": "https://petstore3.swagger.io/api/v3"
-}
+Paste a URL to any public OpenAPI (Swagger) spec and the scanner fetches it, parses every endpoint, checks whether authentication is defined (globally or per-operation), scores unprotected endpoints by risk level, and returns a structured report with warnings, per-endpoint risk ratings, and an overall security assessment.
 
-{
-"specUrl": "",
-"targetUrl": ""
-}
+## Key Features
 
-//fail
-{
-"specUrl": "https://petstore.swagger.io/v2/swagger.json",
-"targetUrl": "https://petstore.swagger.io/v2"
-}
+- **SSRF-safe fetching** — spec URLs are resolved through a DNS-pinning validator that blocks cloud metadata IPs and disables redirects
+- **Authentication detection** — checks global security schemes, operation-level overrides, and common auth header/query patterns (`Authorization`, `X-API-Key`, `access_token`, etc.)
+- **Risk scoring engine** — weights endpoints by HTTP method sensitivity (TRACE/DELETE/PUT > POST > GET) and path keywords (`/admin`, `/payment`, `/wallet`, etc.)
+- **Spec quality warnings** — flags unused security schemes, HTTP-only servers, and missing global security
 
-{
-"specUrl": "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json",
-"targetUrl": "https://api.github.com"
-}
+## Tech Stack
 
-http://localhost:8080/v3/api-docs
+| Layer    | Technology                                                    |
+|----------|---------------------------------------------------------------|
+| Backend  | Java 17, Spring Boot 3.5, Swagger Parser 2.1, Lombok          |
+| Frontend | React 19, TypeScript 5.9, Vite 7.3                            |
+| Infra    | Docker (Eclipse Temurin 21 Alpine), Maven, Spring Actuator    |
+
+## Architecture
+
+```
+┌─────────────┐        POST /api/scan/validate         ┌──────────────────┐
+│   React UI  │ ─────────────────────────────────▶    │  ScanController  │
+│  (Vite dev) │ ◀─────────────────────────────────    │                  │
+│  :5173      │        JSON ResponseDto               └────────┬─────────┘
+└─────────────┘                                                │
+                                                               ▼
+                                                        ┌─────────────┐
+                                                        │ ScanService │  (orchestrator)
+                                                        └──────┬──────┘
+                                          ┌─────────────┬──────┴───────┬────────────────┐
+                                          ▼             ▼              ▼                ▼
+                                   UrlValidator   OpenApiParser  SecurityAnalyzer  ReportBuilder
+                                   (SSRF guard)   (fetch+parse)  (auth+risk)      (score+warn)
+                                          │             │
+                                          └──────┬──────┘
+                                                 ▼
+                                          Remote OpenAPI
+                                          spec (JSON/YAML)
+```
+
+**Flow:** User submits a spec URL → `UrlValidator` resolves DNS and blocks private IPs → `OpenApiParser` fetches the spec through the safe connection and parses it with Swagger Parser → `SecurityAnalyzer` walks every endpoint checking global/operation-level auth and scoring risk → `ReportBuilder` aggregates results, sorts by risk, and generates warnings → JSON response returned to the React frontend.
