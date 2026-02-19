@@ -174,9 +174,9 @@ public class SecurityAnalyzer {
                 log.info("  Endpoint explicitly opts out of security (empty [])");
                 return false;
             }
-                boolean valid = hasValidSecurity(endpoint.getOperation().getSecurity(), definedSchemes);
-                log.info("  Operation-level security valid: {}", valid);
-                return valid;
+            boolean valid = hasValidSecurity(endpoint.getOperation().getSecurity(), definedSchemes);
+            log.info("  Operation-level security valid: {}", valid);
+            return valid;
         }
             // fallback to global security flag if parameter auth is not found
             // if security field null

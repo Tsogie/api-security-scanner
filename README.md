@@ -16,6 +16,7 @@ TEST DATA
 "targetUrl": ""
 }
 
+//fail
 {
 "specUrl": "https://petstore.swagger.io/v2/swagger.json",
 "targetUrl": "https://petstore.swagger.io/v2"
@@ -25,3 +26,5 @@ TEST DATA
 "specUrl": "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json",
 "targetUrl": "https://api.github.com"
 }
+
+http://localhost:8080/v3/api-docs

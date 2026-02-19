@@ -1,11 +1,13 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-}
-
 body {
   margin:0;
   background-color: #343541;
   color: #ececf1;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 header {
@@ -28,21 +30,23 @@ header h1 {
   margin-left: auto;
   margin-right: auto;
   margin-top: 12px;
+  margin-bottom: 0px;
   font-size: 1.2rem;
   font-weight: 400;
 }
 
 .info {
   display: flex;
-  justify-content: space-between;
-  gap: 25px;
-  padding: 0px 60px 0px;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 50px;
 }
 
 .info-block {
+  flex: 1;
   background-color:#444654;
-  width: 48%;
-  padding: 20px 40px 20px;
+  max-width: 520px;
+  padding: 24px 32px;
   border-radius: 12px;
   border: 1px solid #565869;
 }
@@ -59,15 +63,107 @@ header h1 {
 
 .scan-section {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
 }
 
 .scan-box {
   display: flex;
   gap: 12px;
   width: 600px;
+  margin-bottom: 50px;
 }
 
 .scan-box input {
-  
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #565869;
+  border-radius: 12px;
+  background-color: #40414f;
+  color: #ececf1;
+  font-size: 1rem;
+  outline: none;
+}
+
+.scan-box input:focus {
+  border-color: #10a37f;
+}
+
+.scan-box button {
+  background-color: #10a37f;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.scan-box button:hover {
+  opacity: 0.75;
+}
+
+.no-auth {
+  color: red;
+}
+
+.report {
+  background-color: #444654;
+  width: 560px;
+  border-radius: 12px;
+  padding: 20px;
+
+}
+.warnings, .endpoints {
+  background-color: #444654;
+  border: 1px solid #565869;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.summary {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-num {
+  font-weight: 600;
+}
+
+.stat-label {
+  color: #b4b7c5;
+}
+
+.warning-item {
+  border-left: 3px solid #ffa94d;
+  padding-left: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 0px;
+}
+
+th {
+  border-bottom: 1px solid #565869;
+}
+
+tr {
+  border-bottom: 1px solid #3e3f4b;
 }

@@ -55,7 +55,7 @@ public class OpenApiParser {
             throw e;
         } catch (Exception e) {
             throw new InvalidUrlException(
-                    "Failed to reach target URL: " + e.getMessage()
+                    "Failed to reach spec URL: " + e.getMessage()
             );
         }
     }
