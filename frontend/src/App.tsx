@@ -60,7 +60,7 @@ function App() {
     setResult(null);
 
     try {
-      const response = await fetch("http://localhost:8080/api/scan/validate", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/scan/validate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
