@@ -86,5 +86,4 @@ public class UrlValidator {
         String ip = address.getHostAddress();
         return ip.startsWith("169.254.") || ip.equals("100.100.100.200");
     }
-
 }

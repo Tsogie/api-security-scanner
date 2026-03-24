@@ -16,16 +16,13 @@ import java.util.List;
 @Slf4j
 public class ScanService {
 
-    private final UrlValidator urlValidator;
     private final OpenApiParser openApiParser;
     private final SecurityAnalyzer securityAnalyzer;
     private final ReportBuilder reportBuilder;
 
-    public ScanService(UrlValidator urlValidator,
-                       OpenApiParser openApiParser,
+    public ScanService(OpenApiParser openApiParser,
                        SecurityAnalyzer securityAnalyzer,
                        ReportBuilder reportBuilder) {
-        this.urlValidator = urlValidator;
         this.openApiParser = openApiParser;
         this.securityAnalyzer = securityAnalyzer;
         this.reportBuilder = reportBuilder;
@@ -36,7 +33,7 @@ public class ScanService {
         OpenAPI openAPI;
 
         // validate server reachability (throws InvalidUrlException on failure)
-        //urlValidator.validateServerUrl(targetUrl);
+        // urlValidator.validateServerUrl(targetUrl);
 
         // validate spec url with parsing
         openAPI = openApiParser.parseOpenAPI(specUrl);
