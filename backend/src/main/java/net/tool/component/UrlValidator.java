@@ -84,6 +84,7 @@ public class UrlValidator {
     }
     private boolean isCloudMetaDataIp(InetAddress address) {
         String ip = address.getHostAddress();
-        return ip.startsWith("169.254.") || ip.equals("100.100.100.200");
+        return ip.startsWith("169.254.") || ip.equals("100.100.100.200") ||
+                ip.equals("fd00:ec2::254");
     }
 }

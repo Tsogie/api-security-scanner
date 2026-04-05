@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import lombok.extern.slf4j.Slf4j;
 import net.tool.exception.InvalidUrlException;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.net.URL;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class OpenApiParser {
 
     private final UrlValidator urlValidator;
@@ -64,23 +66,23 @@ public class OpenApiParser {
      * Helper, Parse OpenAPI spec from JSON/YAML string
      */
     private OpenAPI parseSpec(String specContent) {
+
+        // Validate size
+        if (specContent.length() > 20_000_000) { // 20MB limit
+            throw new RuntimeException("Spec too large");
+        }
         try {
-            // Validate size
-            if (specContent.length() > 20_000_000) { // 20MB limit
-                throw new RuntimeException("Spec too large");
-            }
 
             OpenAPIV3Parser parser = new OpenAPIV3Parser();
             ParseOptions options = new ParseOptions();
-            options.setResolve(true); // Resolve refs
+            options.setResolve(false); // ?
             options.setResolveFully(false); // Resolve only internal refs
 
             SwaggerParseResult result = parser.readContents(specContent, null, options);
 
             // Check for parsing errors
             if (result.getMessages() != null && !result.getMessages().isEmpty()) {
-                System.out.println("Warning: Parse messages:");
-                result.getMessages().forEach(msg -> System.out.println("  - " + msg));
+                log.warn("Parse messages for spec: {}", result.getMessages());
             }
             return result.getOpenAPI();
         } catch (Exception e) {
